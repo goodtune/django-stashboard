@@ -62,6 +62,8 @@ class List(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
 
+    __unicode__ = lambda self: self.name
+
 
 class Service(models.Model):
     """A service to track
@@ -75,6 +77,8 @@ class Service(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     list = models.ForeignKey(List)
+
+    __unicode__ = lambda self: self.name
 
     #Specialty function for front page
     def history(self, days, default, start=None):
@@ -133,6 +137,11 @@ class Status(models.Model):
     description = models.CharField(max_length=255)
     image = models.CharField(max_length=255)
     default = models.BooleanField(default=False)
+
+    __unicode__ = lambda self: self.name
+
+    class Meta:
+        verbose_name_plural = u'Statuses'
 
 
 class Event(models.Model):
