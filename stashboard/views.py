@@ -43,6 +43,12 @@ from wsgiref.handlers import format_date_time
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views.generic.dates import YearMixin, MonthMixin, DayMixin
 from django.http import Http404
+from django.contrib.syndication.views import Feed, add_domain
+from django.core.urlresolvers import reverse
+from django.contrib.sites.models import Site
+from .forms import RSSQueryForm
+
+RSS_NUM_EVENTS_TO_FETCH = getattr(settings, 'RSS_NUM_EVENTS_TO_FETCH', 10)
 
 
 def default_template_data():
@@ -371,29 +377,34 @@ class CredentialsRedirectHandler(BaseHandler):
     def get(self):
         self.redirect("/admin/credentials")
 
-class RSSHandler(BaseHandler):
+class RSSHandler(Feed):
     """ Feed of the last settings.RSS_NUM_EVENTS_TO_FETCH events """
 
-    def get(self):
-        self.response.headers['Content-Type'] = "application/rss+xml; charset=utf-8"
+    def get_object(self, request, *args, **kwargs):
+        return request
 
-        host = self.request.headers.get('host', 'nohost')
-        base_url = self.request.scheme + "://" + host
+    def title(self, obj=None):
+        current_site = Site.objects.get_current()
 
-        events = []
-        query = Event.all().order("-start")
+        data = {} if obj is None else obj.GET
+        form = RSSQueryForm(data=data)
+        if not form.is_valid():
+            raise Http404('Form has errors.')
 
-        # Filter query by requested services, if specified in the 'service' URL parameter.
-        service_list = []
-        for service_arg in self.request.get_all('services'):
-            service_list.extend(service_arg.split(','))
-        service_list = map(lambda serv_slug: Service.get_by_slug(serv_slug), service_list)
-        # filter out any non-existent services
-        service_list = filter(lambda service: not service is None, service_list)
+        services = form.cleaned_data['services']
+        if services.count() == 1:
+            return u'%s - %s' % (current_site.name, services[0].name)
 
+        return current_site.name
+
+    def description(self, obj):
+        form = RSSQueryForm(data=obj.GET)
+        if not form.is_valid():
+            raise Http404('Form has errors.')
+
+        service_list = list(form.cleaned_data['services'])
         service_string = 'all services'
         if len(service_list) > 0:
-            query.filter('service IN', service_list)
             if len(service_list) == 1:
                 service_string = 'the %s service' % service_list[0].name
             elif len(service_list) == 2:
@@ -401,35 +412,49 @@ class RSSHandler(BaseHandler):
             else:
                 service_string = 'the %s, and %s services' % (', '.join([service.name for service in service_list[:-1]]), service_list[-1].name)
 
-        # Create the root 'rss' element
-        rss_xml = et.Element('rss')
-        rss_xml.set('version', '2.0')
+        return 'This feed shows the last %d events on %s on %s.' % (RSS_NUM_EVENTS_TO_FETCH, service_string, self.title())
 
-        # Create the channel element and its metadata elements
-        channel = et.SubElement(rss_xml, 'channel')
-        title = et.SubElement(channel, 'title')
-        title.text = '%s Service Events' % settings.SITE_NAME
-        description = et.SubElement(channel, 'description')
-        description.text = 'This feed shows the last %d events on %s on %s.' % (settings.RSS_NUM_EVENTS_TO_FETCH, service_string, settings.SITE_NAME)
-        link = et.SubElement(channel, 'link')
-        link.text = base_url
+    def items(self, obj):
+        form = RSSQueryForm(data=obj.GET)
+        if not form.is_valid():
+            raise Http404('Form has errors.')
 
-        # Create each of the feed events.
-        item_subelements = {
-            'title': lambda(event): '[%s - %s] %s' % (event.service.name, event.status.name, unicode(event.message)),
-            'description': lambda(event): '%s' % unicode(event.message),
-            'link': lambda(event): '%s/services/%s' % (base_url, event.service.slug),
-            'category': lambda(event): event.service.name,
-            'pubDate': lambda(event): format_date_time(mktime(event.start.timetuple())),
-            'guid': lambda(event): '%s/api/v1/services/%s/events/%s' % (base_url, event.service.slug, unicode(event.key()))
-        }
+        services = form.cleaned_data['services']
+        if services:
+            queryset = Event.objects.filter(
+                    service__in=services.values_list('pk', flat=True))
+        queryset = Event.objects.all()
 
-        for event in query.fetch(settings.RSS_NUM_EVENTS_TO_FETCH):
-            item = et.SubElement(channel, 'item')
-            for tag, text_func in item_subelements.iteritems():
-                subelement = et.SubElement(item, tag)
-                subelement.text = text_func(event)
+        return queryset[:RSS_NUM_EVENTS_TO_FETCH]
 
-        self.response.out.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        self.response.out.write(et.tostring(rss_xml))
+    def link(self, obj):
+        form = RSSQueryForm(data=obj.GET)
+        if not form.is_valid():
+            raise Http404('Form has errors.')
 
+        services = form.cleaned_data['services']
+        if services.count() == 1:
+            return reverse('service', kwargs={'slug': services[0].slug})
+
+        return reverse('index')
+
+    def item_pubdate(self, item):
+        return item.start
+
+    def item_title(self, item):
+        return '%s - %s' % (item.service.name, item.status.name)
+
+    def item_link(self, item):
+        return reverse('service', kwargs={'slug': item.service.slug})
+
+    def item_categories(self, item):
+        return [item.service.slug, item.service.list.slug]
+
+    def item_description(self, item):
+        return unicode(item.message)
+
+    def item_guid(self, item):
+        current_site = Site.objects.get_current()
+        link = reverse('event', kwargs={'slug': item.service.slug,
+                                        'pk': item.pk})
+        return add_domain(current_site.domain, link)

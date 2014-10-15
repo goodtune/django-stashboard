@@ -5,7 +5,7 @@ sphinx
 git+git://github.com/kyleconroy/webtest.git
 git+git://github.com/kyleconroy/python-oauth2.git
 simplejson
-dateutil
+python-dateutil
 httplib2
 python-oauth2
 pytz
