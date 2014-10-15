@@ -15,10 +15,11 @@
     {% for service in services %}
     <tr id="{{ service.slug}}">
       <td>
-	<a href="{{ service.url }}">{{ service.name }}</a>
+	<a href="{% url 'service' service.slug %}">{{ service.name }}</a>
       </td>
       <td class="status highlight">
-	<a href="{{ service.url }}/{% now "Y/m/j" %}">
+	{# FIXME we should not join url in this ugly way #}
+	<a href="{% url 'service' service.slug %}/{% now "Y/m/j" %}">
 	  {% if service.has_issues %}
 	    <img class="information" src="{{ STATIC_URL }}images/small-information.png" alt="Had Issues"/>
 	  {% endif %}

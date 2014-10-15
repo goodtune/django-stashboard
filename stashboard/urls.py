@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import include, patterns, url
 
 from .views import (
     RootHandler,
@@ -8,6 +8,7 @@ from .views import (
 
 urlpatterns = patterns(
     '',
+    (r'^', include('django.contrib.auth.urls')),
     url(r'^$', RootHandler.as_view(), name='index'),
     url(r'^services/(?P<slug>.+)/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)$', ServiceHandler.as_view(), name='service-day'),
     url(r'^services/(?P<slug>.+)/(?P<year>\d+)/(?P<month>\d+)$', ServiceHandler.as_view(), name='service-month'),
