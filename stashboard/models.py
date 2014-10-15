@@ -24,6 +24,7 @@ from datetime import date
 from time import mktime
 from wsgiref.handlers import format_date_time
 
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -80,6 +81,9 @@ class Service(models.Model):
 
     __unicode__ = lambda self: self.name
 
+    def get_absolute_url(self):
+        return reverse('service', kwargs={'slug': self.slug})
+
     #Specialty function for front page
     def history(self, days, default, start=None):
         """ Return the past n days of activity AFTER the start date.
@@ -96,8 +100,7 @@ class Service(models.Model):
         start = start or date.today()
         ago = start - timedelta(days=days)
 
-        events = self.events.filter('start >=', ago) \
-            .filter('start <', start).fetch(100)
+        events = self.events.filter(start__gte=ago, start__lt=start)
 
         stats = {}
 

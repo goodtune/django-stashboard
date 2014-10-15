@@ -34,12 +34,13 @@ import urlparse
 from datetime import date, timedelta
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils import simplejson as json
+import json
 from time import mktime
 from models import List, Status, Service, Event, Profile
 import xml.etree.ElementTree as et
 from utils import authorized
 from wsgiref.handlers import format_date_time
+from django.views.generic import TemplateView, ListView
 
 
 def default_template_data():
@@ -110,46 +111,42 @@ class UnauthorizedHandler(webapp.RequestHandler):
         self.error(403)
         self.render(default_template_data(), "404.html")
 
+class RootHandler(TemplateView):
 
-class RootHandler(BaseHandler):
+    template_name = 'index.html'
 
-    def data(self):
+    def get_context_data(self, **kwargs):
         services = []
-        default_status = Status.get_default()
+        default_status = Status.objects.latest('default')
 
-        for service in Service.all().order("list").order("name").fetch(100):
-            event = service.current_event()
-            if event is not None:
-                status = event.status
-            else:
+        for service in Service.objects.order_by("list", "name"):
+            try:
+                event = service.events.latest('start')
+            except Event.DoesNotExist:
                 status = default_status
+            else:
+                status = event.status
 
             today = date.today() + timedelta(days=1)
             current, = service.history(1, default_status, start=today)
             has_issues = (current["information"] and
-                          status.key() == default_status.key())
+                          status == default_status)
 
             service_dict = {
                 "slug": service.slug,
                 "name": service.name,
-                "url": service.url(),
+                "url": service.get_absolute_url(),
                 "status": status,
                 "has_issues": has_issues,
                 "history": service.history(5, default_status),
-                }
+            }
             services.append(service_dict)
 
         return {
             "days": get_past_days(5),
-            "statuses": Status.all().fetch(100),
+            "statuses": Status.objects.all(),
             "services": services,
-            }
-
-    def get(self):
-        td = default_template_data()
-        td.update(self.retrieve("frontpage"))
-        #td.update(self.data())
-        self.render(td, 'index.html')
+        }
 
 class ListHandler(BaseHandler):
 

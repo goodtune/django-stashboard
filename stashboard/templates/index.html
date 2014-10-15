@@ -20,19 +20,19 @@
       <td class="status highlight">
 	<a href="{{ service.url }}/{% now "Y/m/j" %}">
 	  {% if service.has_issues %}
-	    <img class="information" src="/images/small-information.png" alt="Had Issues"/>
+	    <img class="information" src="{{ STATIC_URL }}images/small-information.png" alt="Had Issues"/>
 	  {% endif %}
-	  <img class="sym" src="/images/{{ service.status.image }}" alt="{{ service.status.name }}"/>
+	  <img class="sym" src="{{ STATIC_URL }}images/{{ service.status.image }}" alt="{{ service.status.name }}"/>
 	</a>
       </td>
       {% for h in service.history %}
       <td class="status">
 	{% if h.information %}
 	<a href="{{ service.url }}/{{ h.day|date:"Y/m/j" }}">
-	  <img class="sym" src="/images/{{ h.image }}" alt="{{ h.name }}"/>
+	  <img class="sym" src="{{ STATIC_URL }}images/{{ h.image }}" alt="{{ h.name }}"/>
 	</a>
 	{% else %}
-	<img class="sym" src="/images/{{ h.image }}" alt="{{ h.name }}"/>
+	<img class="sym" src="{{ STATIC_URL }}images/{{ h.image }}" alt="{{ h.name }}"/>
 	{% endif %}
       </td>
       {% endfor %}

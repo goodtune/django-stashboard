@@ -27,4 +27,4 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'description', 'image')
+    list_display = ('name', 'slug', 'description', 'image', 'default')
