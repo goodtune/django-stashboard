@@ -18,28 +18,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import os
-import datetime
-import logging
 import urlparse
 from datetime import timedelta
 from datetime import date
-from django.utils import simplejson as json
 from time import mktime
 from wsgiref.handlers import format_date_time
 
+from django.db import models
+from django.contrib.auth.models import User
 
-class InternalEvent(db.Model):
+
+class InternalEvent(models.Model):
     """An event that happens internally that we need to track. If the event
     exists, that mean the event happened.
 
     Properties:
     name -- string: The name of this event
     """
-    name = db.StringProperty(required=True)
+    name = models.CharField(max_length=255)
 
 
-class Image(db.Model):
+class Image(models.Model):
     """A service to track
 
     Properties:
@@ -48,26 +47,15 @@ class Image(db.Model):
     path -- stirng: The path to the image
 
     """
-    slug = db.StringProperty(required=True)
-    icon_set = db.StringProperty(required=True)
-    path = db.StringProperty(required=True)
-
-    @classmethod
-    def get_by_slug(cls, slug):
-        return cls.all().filter('slug = ', slug).get()
-
-    @classmethod
-    def load_defaults(cls):
-        path = os.path.join(os.path.dirname(__file__), "fixtures/images.json")
-        images = json.load(open(path))
-        for i in images:
-            image = Image(slug=i["name"], icon_set=i["set"], path=i["url"])
-            image.put()
+    slug = models.SlugField(max_length=255, db_index=True)
+    #icon_set = models.CharField(max_length=255)
+    path = models.CharField(max_length=255)
 
     def absolute_url(self):
         return "/images/" + self.path
 
-class List(db.Model):
+
+class List(models.Model):
     """A list to group service
 
     Properties:
@@ -76,13 +64,9 @@ class List(db.Model):
     slug        -- string: URL friendly version of the name
 
     """
-    @staticmethod
-    def get_by_slug(list_slug):
-        return List.all().filter('slug = ', list_slug).get()
-
-    slug = db.StringProperty(required=True)
-    name = db.StringProperty(required=True)
-    description = db.StringProperty(required=True)
+    slug = models.SlugField(max_length=255, db_index=True)
+    name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
 
     def url(self):
         return "/service-lists/%s" % self.slug
@@ -108,8 +92,7 @@ class List(db.Model):
         return m
 
 
-
-class Service(db.Model):
+class Service(models.Model):
     """A service to track
 
     Properties:
@@ -118,14 +101,10 @@ class Service(db.Model):
     slug        -- stirng: URL friendly version of the name
 
     """
-    @staticmethod
-    def get_by_slug(service_slug):
-        return Service.all().filter('slug = ', service_slug).get()
-
-    slug = db.StringProperty(required=True)
-    name = db.StringProperty(required=True)
-    description = db.StringProperty(required=True)
-    list = db.ReferenceProperty(List)
+    slug = models.SlugField(max_length=255, db_index=True)
+    name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    list = models.ForeignKey(List)
 
     def current_event(self):
         event = self.events.order('-start').get()
@@ -176,7 +155,6 @@ class Service(db.Model):
 
         return history
 
-
     def compare(self, other_status):
         return 0
 
@@ -208,7 +186,8 @@ class Service(db.Model):
 
         return m
 
-class Status(db.Model):
+
+class Status(models.Model):
     """A possible system status
 
     Properties:
@@ -218,45 +197,14 @@ class Status(db.Model):
     image       -- string: Image in /images/status
 
     """
-    @classmethod
-    def get_by_slug(cls, status_slug):
-        return cls.all().filter('slug = ', status_slug).get()
-
-    @classmethod
-    def get_default(cls):
-        return cls.all().filter('default = ', True).get()
-
-    @classmethod
-    def load_defaults(cls):
-        """
-        Install the default statuses. xI am not sure where these should live just yet
-        """
-        if not cls.get_by_slug("down"):
-            d = cls(name="Down", slug="down",
-                    image="icons/fugue/cross-circle.png",
-                    description="The service is currently down")
-            d.put()
-
-        if not cls.get_by_slug("up"):
-            u = cls(name="Up", slug="up", default=True,
-                    image="icons/fugue/tick-circle.png",
-                    description="The service is up")
-            u.put()
-
-        if not cls.get_by_slug("warning"):
-            w = cls(name="Warning", slug="warning",
-                    image="icons/fugue/exclamation.png",
-                    description="The service is experiencing intermittent problems")
-            w.put()
-
-    name = db.StringProperty(required=True)
-    slug = db.StringProperty(required=True)
-    description = db.StringProperty(required=True)
-    image = db.StringProperty(required=True)
-    default = db.BooleanProperty(default=False)
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, db_index=True)
+    description = models.CharField(max_length=255)
+    image = models.CharField(max_length=255)
+    default = models.BooleanField(default=False)
 
     # Deprecated
-    severity = db.IntegerProperty(default=10)
+    severity = models.IntegerField(default=10)
 
     def image_url(self):
         return "/images/" + unicode(self.image)
@@ -274,7 +222,7 @@ class Status(db.Model):
         m["description"] = unicode(self.description)
         m["url"] = base_url + self.resource_url()
         o = urlparse.urlparse(base_url)
-        m["image"] = o.scheme + "://" +  o.netloc + self.image_url()
+        m["image"] = o.scheme + "://" + o.netloc + self.image_url()
 
         # Maintain v1 requirement
         if self.severity == 30:
@@ -289,17 +237,16 @@ class Status(db.Model):
         return m
 
 
-class Event(db.Model):
+class Event(models.Model):
 
-    start = db.DateTimeProperty(required=True, auto_now_add=True)
+    start = models.DateTimeField(auto_now_add=True)
 
     # We want this to be required, but it would break all current installs
     # Instead, we handle it in the rest method
-    informational = db.BooleanProperty(default=False)
-    status = db.ReferenceProperty(Status, required=True)
-    message = db.TextProperty(required=True)
-    service = db.ReferenceProperty(Service, required=True,
-        collection_name="events")
+    informational = models.BooleanField(default=False)
+    status = models.ForeignKey(Status)
+    message = models.TextField()
+    service = models.ForeignKey(Service, related_name="events")
 
     def duration(self):
         # calculate the difference between start and end
@@ -331,8 +278,8 @@ class Event(db.Model):
 
         return m
 
-class Profile(db.Model):
-    owner = db.UserProperty(required=True)
-    token = db.StringProperty(required=True)
-    secret = db.StringProperty(required=True)
 
+class Profile(models.Model):
+    owner = models.ForeignKey(User)
+    token = models.CharField(max_length=255)
+    secret = models.CharField(max_length=255)
