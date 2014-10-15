@@ -4,11 +4,6 @@ import oauth2 as oauth
 import os
 import migrations
 from django.conf import settings
-from google.appengine.api import memcache
-from google.appengine.api import taskqueue
-from google.appengine.api import users
-from google.appengine.ext import db
-from google.appengine.ext import webapp
 from handlers import api
 from handlers import site
 from models import List, Service, Status, Event, Image, Profile, InternalEvent

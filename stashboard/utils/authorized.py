@@ -28,9 +28,6 @@ Copyright (c) 2008 Publishare LLC.  Distributed under MIT License.
 """
 __author__ = 'William T. Katz'
 
-from google.appengine.api import users
-from google.appengine.api import oauth
-
 import logging
 import os
 

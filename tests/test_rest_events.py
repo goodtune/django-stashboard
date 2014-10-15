@@ -1,4 +1,3 @@
-from google.appengine.ext import testbed
 import models
 from test_api import StashboardTest
 

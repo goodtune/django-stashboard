@@ -6,8 +6,6 @@ except ImportError:
 import os
 import unittest
 
-from google.appengine.ext import testbed
-
 def load_schemas(path):
     schemas = {}
     for f in os.listdir(path):

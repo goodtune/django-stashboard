@@ -24,7 +24,6 @@ import logging
 import urlparse
 from datetime import timedelta
 from datetime import date
-from google.appengine.ext import db
 from django.utils import simplejson as json
 from time import mktime
 from wsgiref.handlers import format_date_time
