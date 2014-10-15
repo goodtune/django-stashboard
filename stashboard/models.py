@@ -43,16 +43,11 @@ class Image(models.Model):
 
     Properties:
     slug -- stirng: URL friendly version of the name
-    name -- string: The name of this service
     path -- stirng: The path to the image
-
     """
     slug = models.SlugField(max_length=255, db_index=True)
-    #icon_set = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     path = models.CharField(max_length=255)
-
-    def absolute_url(self):
-        return "/images/" + self.path
 
 
 class List(models.Model):
@@ -62,34 +57,10 @@ class List(models.Model):
     name        -- string: The name of this list
     description -- string: The description of the list
     slug        -- string: URL friendly version of the name
-
     """
     slug = models.SlugField(max_length=255, db_index=True)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
-
-    def url(self):
-        return "/service-lists/%s" % self.slug
-
-    def compare(self, other_status):
-        return 0
-
-    def sid(self):
-        return unicode(self.key())
-
-    def resource_url(self):
-        return "/service-lists/" + self.slug
-
-    def rest(self, base_url):
-        """ Return a Python object representing this model"""
-
-        m = {}
-        m["name"] = unicode(self.name)
-        m["id"] = unicode(self.slug)
-        m["description"] = unicode(self.description)
-        m["url"] = base_url + self.resource_url()
-
-        return m
 
 
 class Service(models.Model):
@@ -99,19 +70,11 @@ class Service(models.Model):
     name        -- string: The name of this service
     description -- string: The function of the service
     slug        -- stirng: URL friendly version of the name
-
     """
     slug = models.SlugField(max_length=255, db_index=True)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     list = models.ForeignKey(List)
-
-    def current_event(self):
-        event = self.events.order('-start').get()
-        return event
-
-    def url(self):
-        return "/services/%s" % self.slug
 
     #Specialty function for front page
     def history(self, days, default, start=None):
@@ -155,37 +118,6 @@ class Service(models.Model):
 
         return history
 
-    def compare(self, other_status):
-        return 0
-
-    def sid(self):
-        return unicode(self.key())
-
-    def resource_url(self):
-        return "/services/" + self.slug
-
-    def rest(self, base_url):
-        """ Return a Python object representing this model"""
-
-        m = {}
-        m["name"] = unicode(self.name)
-        m["id"] = unicode(self.slug)
-        m["description"] = unicode(self.description)
-        m["url"] = base_url + self.resource_url()
-
-        event = self.current_event()
-        if event:
-            m["current-event"] = event.rest(base_url)
-        else:
-            m["current-event"] = None
-
-        if self.list:
-            m["list"] = self.list.rest(base_url)
-        else:
-            m["list"] = None
-
-        return m
-
 
 class Status(models.Model):
     """A possible system status
@@ -195,46 +127,12 @@ class Status(models.Model):
     slug        -- stirng: The identifier for the status
     description -- string: The state this status represents
     image       -- string: Image in /images/status
-
     """
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, db_index=True)
     description = models.CharField(max_length=255)
     image = models.CharField(max_length=255)
     default = models.BooleanField(default=False)
-
-    # Deprecated
-    severity = models.IntegerField(default=10)
-
-    def image_url(self):
-        return "/images/" + unicode(self.image)
-
-    def resource_url(self):
-        return "/statuses/" + unicode(self.slug)
-
-    def rest(self, base_url):
-        """ Return a Python object representing this model"""
-
-        m = {}
-        m["default"] = self.default
-        m["name"] = unicode(self.name)
-        m["id"] = unicode(self.slug)
-        m["description"] = unicode(self.description)
-        m["url"] = base_url + self.resource_url()
-        o = urlparse.urlparse(base_url)
-        m["image"] = o.scheme + "://" + o.netloc + self.image_url()
-
-        # Maintain v1 requirement
-        if self.severity == 30:
-            m["level"] = "WARNING"
-        elif self.severity == 40:
-            m["level"] = "ERROR"
-        elif self.severity == 50:
-            m["level"] = "CRITICAL"
-        else:
-            m["level"] = "NORMAL"
-
-        return m
 
 
 class Event(models.Model):
@@ -247,36 +145,6 @@ class Event(models.Model):
     status = models.ForeignKey(Status)
     message = models.TextField()
     service = models.ForeignKey(Service, related_name="events")
-
-    def duration(self):
-        # calculate the difference between start and end
-        # should evantually be stored
-        pass
-
-    def sid(self):
-        return unicode(self.key())
-
-    def resource_url(self):
-        return self.service.resource_url() + "/events/" + self.sid()
-
-    def rest(self, base_url):
-        """ Return a Python object representing this model"""
-
-        m = {}
-        m["sid"] = self.sid()
-
-        stamp = mktime(self.start.timetuple())
-        m["timestamp"] = format_date_time(stamp)
-        m["status"] = self.status.rest(base_url)
-        m["message"] = unicode(self.message)
-        m["url"] = base_url + self.resource_url()
-
-        if self.informational:
-            m["informational"] = self.informational
-        else:
-            m["informational"] = False
-
-        return m
 
 
 class Profile(models.Model):
