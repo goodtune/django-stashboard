@@ -40,7 +40,9 @@ from models import List, Status, Service, Event, Profile
 import xml.etree.ElementTree as et
 from utils import authorized
 from wsgiref.handlers import format_date_time
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic.dates import YearMixin, MonthMixin, DayMixin
+from django.http import Http404
 
 
 def default_template_data():
@@ -117,7 +119,7 @@ class RootHandler(TemplateView):
 
     def get_context_data(self, **kwargs):
         services = []
-        default_status = Status.objects.latest('default')
+        default_status = Status.objects.get(default=True)
 
         for service in Service.objects.order_by("list", "name"):
             try:
@@ -284,14 +286,26 @@ class ListSummaryHandler(BaseHandler):
         self.render(td, 'summary.html')
 
 
-class ServiceHandler(BaseHandler):
+class ServiceHandler(YearMixin, MonthMixin, DayMixin, DetailView):
 
-    def get(self, service_slug, year=None, month=None, day=None):
-        service = Service.get_by_slug(service_slug)
+    model = Service
+    template_name = 'service.html'
 
-        if not service:
-            self.not_found()
-            return
+    def events(self):
+        try:
+            year = self.get_year()
+        except Http404:
+            year = None
+
+        try:
+            month = self.get_month()
+        except Http404:
+            month = None
+
+        try:
+            day = self.get_day()
+        except Http404:
+            day = None
 
         try:
             if day:
@@ -308,21 +322,20 @@ class ServiceHandler(BaseHandler):
             else:
                 start_date = None
                 end_date = None
-        except ValueError:
-            self.not_found(404)
-            return
-
-        events = service.events
+        except ValueError, x:
+            raise Http404(x)
 
         if start_date and end_date:
-            events.filter('start >= ', start_date).filter('start <', end_date)
+            return self.object.events.filter(start__gte=start_date,
+                                             start__lt=end_date)
 
-        td = default_template_data()
-        td["statuses"] = Status.all().fetch(100)
-        td["service"] = service
-        td["events"] = events.order("-start").fetch(500)
+        return self.object.events.all()
 
-        self.render(td, 'service.html')
+    def get_context_data(self, **kwargs):
+        context = super(ServiceHandler, self).get_context_data(**kwargs)
+        context["statuses"] = Status.objects.all()
+        context["events"] = self.events()
+        return context
 
 class BaseDocumentationHandler(BaseHandler):
 

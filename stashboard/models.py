@@ -158,6 +158,9 @@ class Event(models.Model):
     message = models.TextField()
     service = models.ForeignKey(Service, related_name="events")
 
+    class Meta:
+        ordering = ('-start',)
+
 
 class Profile(models.Model):
     owner = models.ForeignKey(User)
