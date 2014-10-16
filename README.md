@@ -1,24 +1,23 @@
-# Stashboard
+# django-stashboard
 
-[![Build Status](https://secure.travis-ci.org/twilio/stashboard.png?branch=master)](http://travis-ci.org/twilio/stashboard)
+The original Stashboard was developed by Twilio to provide status information on our phone, SMS, and Communication APIs. They open sourced it to provide a generic status page designed to be customized by any hosted services company to provide customers up-to-date status information.
 
-Stashboard was written by Twilio to provide status information on our phone, SMS, and Communication APIs. We open sourced the code to provide a generic status page designed to be customized by any hosted services company to provide customers up-to-date status information. The code can be downloaded, customized with your logo, and run on any Google App Engine account.
+The original is dependent on Google App Engine, this fork removes the dependency and makes this a pure-Django project, using the traditional ORM.
 
 ## Installation
 
-1. Download and install the [App Engine SDK for Python][appengine]
-2. `git clone git://github.com/twilio/stashboard.git`
-3. Add your application id to `app.yaml`
-4. Open the SDK, choose `File > Add Existing Application...` and select the `stashboard` folder inside the cloned repository
-5. Update the settings in `settings.py`
-6. Visit http://your-app-id.appspot.com/admin/setup to complete the installation
+To add Stashboard to an existing Django application, first of install "django-stashboard" - the code is available on pypi.
 
-From here you can either run Stashboard locally in the [App Engine development environment][local] or [deploy to Appspot][deploy].
-See the [Getting Started](http://code.google.com/appengine/docs/python/gettingstarted) guide for a basic overview of the App Engine platform.
+	pip install django-stashboard
 
-[local]: http://code.google.com/appengine/docs/python/gettingstarted/devenvironment.html
-[deploy]: http://code.google.com/appengine/docs/python/gettingstarted/uploading.html
-[appengine]: http://code.google.com/appengine/downloads.html#Google_App_Engine_SDK_for_Python
+Next, you should add `stashboard` to your `INSTALLED_APPS` in the project settings module.
+
+	INSTALLED_APPS = (
+		...
+		'stashboard',
+		'rest_framework',  # API
+		...
+	)
 
 ## Demo
 
