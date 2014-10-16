@@ -36,6 +36,7 @@ from django.contrib.sites.models import Site
 from .forms import RSSQueryForm
 
 RSS_NUM_EVENTS_TO_FETCH = getattr(settings, 'RSS_NUM_EVENTS_TO_FETCH', 10)
+INDEX_NUM_DAYS = getattr(settings, 'INDEX_NUM_DAYS', 6)
 
 
 def get_past_days(num):
@@ -70,15 +71,14 @@ class RootHandler(TemplateView):
             service_dict = {
                 "slug": service.slug,
                 "name": service.name,
-                "url": service.get_absolute_url(),
                 "status": status,
                 "has_issues": has_issues,
-                "history": service.history(5, default_status),
+                "history": service.history(INDEX_NUM_DAYS, default_status),
             }
             services.append(service_dict)
 
         return {
-            "days": get_past_days(5),
+            "days": get_past_days(INDEX_NUM_DAYS),
             "statuses": Status.objects.all(),
             "services": services,
         }

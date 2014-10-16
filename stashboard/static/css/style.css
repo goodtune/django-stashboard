@@ -21,7 +21,7 @@ em {
 }
 
 #wrapper {
-  width: 900px; min-height: 100%;
+  width: 95%; min-height: 100%;
   height: auto !important; height: 100%;
   margin: 0 auto -3em;
 }
@@ -233,7 +233,7 @@ nav .selected {
 #legend img, #legend p {vertical-align: middle; display: inline-block;}
 
 #footer, #push {height: 3em;}
-#footer {width: 900px; margin: auto;}
+#footer {width: 95%; margin: auto;}
 #footer ul {padding: 10px 0px;}
 #footer ul li {display: inline-block;}
 #footer ul.left { float: left;}

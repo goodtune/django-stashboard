@@ -5,9 +5,9 @@
   <thead>
     <tr>
       <th>Service</th>
-      <th class="today">Current</th>
+      <th class="today">{% now "D jS" %}</th>
       {% for day in days %}
-      <th> {{ day|date:"N d" }} </th>
+      <th> {{ day|date:"D jS" }} </th>
       {% endfor %}
   </thead>
 

@@ -36,7 +36,7 @@ class List(models.Model):
     """
     slug = models.SlugField(max_length=255, primary_key=True)
     name = models.CharField(max_length=255)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, blank=True)
 
     __unicode__ = lambda self: self.name
 
@@ -51,15 +51,11 @@ class Service(models.Model):
     """
     slug = models.SlugField(max_length=255, primary_key=True)
     name = models.CharField(max_length=255)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, blank=True)
     list = models.ForeignKey(List, related_name='services')
 
     __unicode__ = lambda self: self.name
 
-    def get_absolute_url(self):
-        return reverse('service', kwargs={'slug': self.slug})
-
-    #Specialty function for front page
     def history(self, days, default, start=None):
         """ Return the past n days of activity AFTER the start date.
 
@@ -133,9 +129,3 @@ class Event(models.Model):
 
     class Meta:
         ordering = ('-start',)
-
-
-class Profile(models.Model):
-    owner = models.ForeignKey(User)
-    token = models.CharField(max_length=255)
-    secret = models.CharField(max_length=255)
