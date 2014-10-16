@@ -25,6 +25,8 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.contrib.auth.models import User
 
+from uuidfield import UUIDField
+
 
 class List(models.Model):
     """A list to group service
@@ -120,6 +122,7 @@ class Status(models.Model):
 
 class Event(models.Model):
 
+    uuid = UUIDField(auto=True, primary_key=True)
     start = models.DateTimeField(auto_now_add=True)
 
     service = models.ForeignKey(Service, related_name="events")

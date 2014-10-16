@@ -12,3 +12,4 @@ pytz
 djangorestframework
 markdown
 django-filter
+django-uuidfield

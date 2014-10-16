@@ -218,6 +218,5 @@ class RSSHandler(Feed):
 
     def item_guid(self, item):
         current_site = Site.objects.get_current()
-        link = reverse('event', kwargs={'slug': item.service.slug,
-                                        'pk': item.pk})
+        link = reverse('event-detail', kwargs={'pk': item.pk})
         return add_domain(current_site.domain, link)

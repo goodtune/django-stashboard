@@ -2,69 +2,34 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-from django.conf import settings
+import uuidfield.fields
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
             name='Event',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('uuid', uuidfield.fields.UUIDField(primary_key=True, serialize=False, editable=False, max_length=32, blank=True, unique=True)),
                 ('start', models.DateTimeField(auto_now_add=True)),
-                ('informational', models.BooleanField(default=False)),
                 ('message', models.TextField()),
+                ('informational', models.BooleanField(default=False)),
             ],
             options={
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='Image',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('slug', models.SlugField(max_length=255)),
-                ('name', models.CharField(max_length=255)),
-                ('path', models.CharField(max_length=255)),
-            ],
-            options={
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='InternalEvent',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(max_length=255)),
-            ],
-            options={
+                'ordering': ('-start',),
             },
             bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='List',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('slug', models.SlugField(max_length=255)),
+                ('slug', models.SlugField(max_length=255, serialize=False, primary_key=True)),
                 ('name', models.CharField(max_length=255)),
-                ('description', models.CharField(max_length=255)),
-            ],
-            options={
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='Profile',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('token', models.CharField(max_length=255)),
-                ('secret', models.CharField(max_length=255)),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('description', models.CharField(max_length=255, blank=True)),
             ],
             options={
             },
@@ -73,11 +38,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Service',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('slug', models.SlugField(max_length=255)),
+                ('slug', models.SlugField(max_length=255, serialize=False, primary_key=True)),
                 ('name', models.CharField(max_length=255)),
-                ('description', models.CharField(max_length=255)),
-                ('list', models.ForeignKey(to='stashboard.List')),
+                ('description', models.CharField(max_length=255, blank=True)),
+                ('list', models.ForeignKey(related_name=b'services', to='stashboard.List')),
             ],
             options={
             },
@@ -86,14 +50,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Status',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=255)),
-                ('slug', models.SlugField(max_length=255)),
+                ('slug', models.SlugField(max_length=255, serialize=False, primary_key=True)),
                 ('description', models.CharField(max_length=255)),
                 ('image', models.CharField(max_length=255)),
                 ('default', models.BooleanField(default=False)),
             ],
             options={
+                'verbose_name_plural': 'Statuses',
             },
             bases=(models.Model,),
         ),
@@ -106,7 +70,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='event',
             name='status',
-            field=models.ForeignKey(to='stashboard.Status'),
+            field=models.ForeignKey(related_name=b'statuses', to='stashboard.Status'),
             preserve_default=True,
         ),
     ]
