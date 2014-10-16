@@ -26,28 +26,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class InternalEvent(models.Model):
-    """An event that happens internally that we need to track. If the event
-    exists, that mean the event happened.
-
-    Properties:
-    name -- string: The name of this event
-    """
-    name = models.CharField(max_length=255)
-
-
-class Image(models.Model):
-    """A service to track
-
-    Properties:
-    slug -- stirng: URL friendly version of the name
-    path -- stirng: The path to the image
-    """
-    slug = models.SlugField(max_length=255, db_index=True)
-    name = models.CharField(max_length=255)
-    path = models.CharField(max_length=255)
-
-
 class List(models.Model):
     """A list to group service
 
@@ -56,7 +34,7 @@ class List(models.Model):
     description -- string: The description of the list
     slug        -- string: URL friendly version of the name
     """
-    slug = models.SlugField(max_length=255, db_index=True)
+    slug = models.SlugField(max_length=255, primary_key=True)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
 
@@ -71,7 +49,7 @@ class Service(models.Model):
     description -- string: The function of the service
     slug        -- stirng: URL friendly version of the name
     """
-    slug = models.SlugField(max_length=255, db_index=True)
+    slug = models.SlugField(max_length=255, primary_key=True)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     list = models.ForeignKey(List, related_name='services')
@@ -133,7 +111,7 @@ class Status(models.Model):
     image       -- string: Image in /images/status
     """
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, db_index=True)
+    slug = models.SlugField(max_length=255, primary_key=True)
     description = models.CharField(max_length=255)
     image = models.CharField(max_length=255)
     default = models.BooleanField(default=False)
@@ -148,12 +126,10 @@ class Event(models.Model):
 
     start = models.DateTimeField(auto_now_add=True)
 
-    # We want this to be required, but it would break all current installs
-    # Instead, we handle it in the rest method
-    informational = models.BooleanField(default=False)
+    service = models.ForeignKey(Service, related_name="events")
     status = models.ForeignKey(Status, related_name='statuses')
     message = models.TextField()
-    service = models.ForeignKey(Service, related_name="events")
+    informational = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-start',)

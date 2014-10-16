@@ -39,12 +39,14 @@ class EventViewSet(viewsets.ModelViewSet):
         permissions.DjangoModelPermissionsOrAnonReadOnly,)
 
 
-class StatusViewSet(viewsets.ReadOnlyModelViewSet):
+class StatusViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows statuses to be viewed or edited.
     """
     queryset = Status.objects.all()
     serializer_class = StatusSerializer
+    permission_classes = (
+        permissions.DjangoModelPermissionsOrAnonReadOnly,)
 
 
 router = routers.DefaultRouter()
