@@ -7,6 +7,7 @@ from .models import (
     Status,
 )
 
+
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     list_display = ('service', 'start', 'status', 'message')

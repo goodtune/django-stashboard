@@ -18,11 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import urlparse
 from datetime import timedelta
 from datetime import date
-from time import mktime
-from wsgiref.handlers import format_date_time
 
 from django.core.urlresolvers import reverse
 from django.db import models

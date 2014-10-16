@@ -1,5 +1,3 @@
-from django.shortcuts import get_object_or_404
-
 from rest_framework import permissions, routers, viewsets
 
 from .models import Event, List, Service, Status
