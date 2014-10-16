@@ -55,7 +55,7 @@ class RootHandler(TemplateView):
         services = []
         default_status = Status.objects.get(default=True)
 
-        for service in Service.objects.order_by("list", "name"):
+        for service in Service.objects.all():
             try:
                 event = service.events.latest('start')
             except Event.DoesNotExist:

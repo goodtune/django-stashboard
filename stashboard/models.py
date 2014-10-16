@@ -58,6 +58,9 @@ class Service(models.Model):
 
     __unicode__ = lambda self: self.name
 
+    class Meta:
+        ordering = ('name',)
+
     def history(self, days, default, start=None):
         """ Return the past n days of activity AFTER the start date.
 
