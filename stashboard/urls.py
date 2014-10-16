@@ -6,6 +6,8 @@ from .views import (
     RSSHandler,
 )
 
+from .api import router
+
 urlpatterns = patterns(
     '',
     (r'^', include('django.contrib.auth.urls')),
@@ -15,4 +17,6 @@ urlpatterns = patterns(
     url(r'^services/(?P<slug>.+)/(?P<year>\d+)$', ServiceHandler.as_view(), name='service-year'),
     url(r'^services/(?P<slug>.+)$', ServiceHandler.as_view(), name='service'),
     url(r'^rss$', RSSHandler(), name='rss'),
+    url(r'^api/v1/', include(router.urls)),
+    url(r'^api/auth/', include('rest_framework.urls', namespace='rest_framework'))
 )

@@ -77,7 +77,7 @@ class Service(models.Model):
     slug = models.SlugField(max_length=255, db_index=True)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
-    list = models.ForeignKey(List)
+    list = models.ForeignKey(List, related_name='services')
 
     __unicode__ = lambda self: self.name
 
@@ -154,7 +154,7 @@ class Event(models.Model):
     # We want this to be required, but it would break all current installs
     # Instead, we handle it in the rest method
     informational = models.BooleanField(default=False)
-    status = models.ForeignKey(Status)
+    status = models.ForeignKey(Status, related_name='statuses')
     message = models.TextField()
     service = models.ForeignKey(Service, related_name="events")
 

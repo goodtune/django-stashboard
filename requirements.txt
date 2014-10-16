@@ -9,3 +9,6 @@ python-dateutil
 httplib2
 python-oauth2
 pytz
+djangorestframework
+markdown
+django-filter
