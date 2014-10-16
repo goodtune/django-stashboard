@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 
 class StatusSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.SlugField(source='slug', read_only=True)
+    id = serializers.SlugField(source='slug')
 
     class Meta:
         model = Status
@@ -28,7 +28,7 @@ class NestedEventSerializer(EventSerializer):
 
 
 class ServiceSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.SlugField(source='slug', read_only=True)
+    id = serializers.SlugField(source='slug')
     events = NestedEventSerializer(many=True, read_only=True)
     list = serializers.SlugRelatedField(slug_field='slug', required=True)
 
@@ -43,7 +43,7 @@ class NestedServiceSerializer(ServiceSerializer):
 
 
 class ServiceListSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.SlugField(source='slug', read_only=True)
+    id = serializers.SlugField(source='slug')
     services = NestedServiceSerializer(many=True, read_only=True)
 
     class Meta:
