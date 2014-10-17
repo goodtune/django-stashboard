@@ -1,0 +1,6 @@
+include AUTHORS LICENSE requirements.txt
+recursive-include stashboard *.py
+recursive-include stashboard/fixtures *
+recursive-include stashboard/templates *
+recursive-include stashboard/static *
+recursive-exclude * *.py[co]

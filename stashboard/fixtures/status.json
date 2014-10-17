@@ -1,0 +1,52 @@
+[
+  {
+    "fields": {
+      "default": true,
+      "image": "icons/fugue/tick-circle.png",
+      "name": "Available",
+      "description": "System is working as expected."
+    },
+    "model": "stashboard.status",
+    "pk": "available"
+  },
+  {
+    "fields": {
+      "default": false,
+      "image": "icons/fugue/traffic-cone.png",
+      "name": "Delays",
+      "description": "Processing is delayed"
+    },
+    "model": "stashboard.status",
+    "pk": "delays"
+  },
+  {
+    "fields": {
+      "default": false,
+      "image": "icons/fugue/exclamation.png",
+      "name": "Issues",
+      "description": "Known issues"
+    },
+    "model": "stashboard.status",
+    "pk": "issues"
+  },
+  {
+    "fields": {
+      "default": false,
+      "image": "icons/fugue/hard-hat.png",
+      "name": "Maintenance",
+      "description": "Scheduled maintenance"
+    },
+    "model": "stashboard.status",
+    "pk": "maintenance"
+  },
+  {
+    "fields": {
+      "default": false,
+      "image": "icons/fugue/cross-circle.png",
+      "name": "Unavailable",
+      "description": "System is unavailable."
+    },
+    "model": "stashboard.status",
+    "pk": "unavailable"
+  }
+]
